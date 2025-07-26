@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Hasi Ka Bomb - Funny Face Cam</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/@banuba/webar@latest/dist/BanubaSDK.browser.js"></script>
+  <style>
+    body, html { margin:0; padding:0; overflow:hidden; font-family:sans-serif; background:#000; color:white; }
+    #banuba-root { width:100vw; height:100vh; background:#000; }
+    .control { position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:10; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+    button { padding:8px 14px; font-size:14px; border-radius:5px; border:none; background:#f90; color:#000; font-weight:bold; }
+  </style>
+</head>
+<body>
+  <div class="control">
+    <button onclick="loadEffect('funny/big-nose')">Big Nose</button>
+    <button onclick="loadEffect('funny/elephant-ears')">Elephant Ears</button>
+    <button onclick="loadEffect('funny/balloon-belly')">Balloon Belly</button>
+    <button onclick="loadEffect('funny/cat-face')">Cat Face</button>
+    <button onclick="loadEffect('funny/donkey-ears')">Donkey Ears</button>
+    <button onclick="capture()">📸 Capture</button>
+  </div>
+  <div id="banuba-root"></div>
+  <script>
+    let sdk;
+    BanubaSDK.init({ clientToken: 'YOUR_CLIENT_TOKEN' }).then((app) => {
+      sdk = app;
+      sdk.attach('#banuba-root');
+      loadEffect('funny/big-nose');
+    });
+    function loadEffect(effectName) {
+      sdk.loadEffect(effectName);
+    }
+    function capture() {
+      sdk.takeScreenshotAsBase64().then(data => {
+        const w = window.open('');
+        w.document.write('<img src="' + data + '">');
+      });
+    }
+  </script>
+</body>
+</html>
