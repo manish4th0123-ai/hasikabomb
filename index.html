@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://unpkg.com/@banuba/webar@latest/dist/BanubaSDK.browser.js"></script>
   <style>
-    body, html { margin:0; padding:0; overflow:hidden; font-family:sans-serif; background:#000; color:white; }
-    #banuba-root { width:100vw; height:100vh; background:#000; }
-    .control { position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:10; display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
-    button { padding:8px 14px; font-size:14px; border-radius:5px; border:none; background:#f90; color:#000; font-weight:bold; }
+    body, html { margin:0; padding:0; overflow:hidden; background:#000; color:white; }
+    #banuba-root { width:100vw; height:100vh; }
+    .control { position:absolute; top:10px; left:50%; transform:translateX(-50%); display:flex; gap:10px; flex-wrap:wrap; }
+    button { padding:8px; font-size:14px; background:#f90; color:#000; border:none; border-radius:5px; }
   </style>
 </head>
 <body>
@@ -23,18 +23,18 @@
   <div id="banuba-root"></div>
   <script>
     let sdk;
-    BanubaSDK.init({ clientToken: 'YOUR_CLIENT_TOKEN' }).then((app) => {
+    BanubaSDK.init({ clientToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo-token-for-hasikabomb-testing' }).then((app) => {
       sdk = app;
       sdk.attach('#banuba-root');
       loadEffect('funny/big-nose');
     });
-    function loadEffect(effectName) {
-      sdk.loadEffect(effectName);
+    function loadEffect(effect) {
+      sdk.loadEffect(effect);
     }
     function capture() {
-      sdk.takeScreenshotAsBase64().then(data => {
+      sdk.takeScreenshotAsBase64().then(img => {
         const w = window.open('');
-        w.document.write('<img src="' + data + '">');
+        w.document.write('<img src="' + img + '">');
       });
     }
   </script>
