@@ -3,40 +3,43 @@
 <head>
   <title>Hasi Ka Bomb - Funny Face Cam</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://unpkg.com/@banuba/webar@latest/dist/BanubaSDK.browser.js"></script>
-  <style>
-    body, html { margin:0; padding:0; overflow:hidden; background:#000; color:white; }
-    #banuba-root { width:100vw; height:100vh; }
-    .control { position:absolute; top:10px; left:50%; transform:translateX(-50%); display:flex; gap:10px; flex-wrap:wrap; }
-    button { padding:8px; font-size:14px; background:#f90; color:#000; border:none; border-radius:5px; }
-  </style>
-</head>
-<body>
-  <div class="control">
-    <button onclick="loadEffect('funny/big-nose')">Big Nose</button>
-    <button onclick="loadEffect('funny/elephant-ears')">Elephant Ears</button>
-    <button onclick="loadEffect('funny/balloon-belly')">Balloon Belly</button>
-    <button onclick="loadEffect('funny/cat-face')">Cat Face</button>
-    <button onclick="loadEffect('funny/donkey-ears')">Donkey Ears</button>
-    <button onclick="capture()">📸 Capture</button>
-  </div>
-  <div id="banuba-root"></div>
-  <script>
-    let sdk;
-    BanubaSDK.init({ clientToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo-token-for-hasikabomb-testing' }).then((app) => {
-      sdk = app;
-      sdk.attach('#banuba-root');
-      loadEffect('funny/big-nose');
-    });
-    function loadEffect(effect) {
-      sdk.loadEffect(effect);
-    }
-    function capture() {
-      sdk.takeScreenshotAsBase64().then(img => {
-        const w = window.open('');
-        w.document.write('<img src="' + img + '">');
+  <script type="module">
+    import { Player, Webcam, Dom } from "https://cdn.jsdelivr.net/npm/@banuba/webar/dist/BanubaSDK.browser.esm.js";
+
+    let player;
+    window.addEventListener("DOMContentLoaded", async () => {
+      player = await Player.create({
+        clientToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo-token-for-hasikabomb-testing"
       });
-    }
+
+      const webcam = new Webcam();
+      await player.use(webcam);
+
+      Dom.render(player, document.body);
+
+      const ctrl = document.createElement('div');
+      ctrl.style = 'position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:1000;';
+      document.body.appendChild(ctrl);
+
+      ["funny/big-nose","funny/elephant-ears","funny/balloon-belly","funny/cat-face","funny/donkey-ears"].forEach(effect => {
+        const btn = document.createElement('button');
+        btn.textContent = effect.split('/')[1].replace('-', ' ');
+        btn.style = 'padding:8px 14px;font-size:14px;background:#f90;color:#000;border:none;border-radius:5px;';
+        btn.onclick = () => player.applyEffect(effect);
+        ctrl.appendChild(btn);
+      });
+
+      const cap = document.createElement('button');
+      cap.textContent = "📸 Capture";
+      cap.style = 'padding:8px 14px;font-size:14px;background:#44f;color:white;border:none;border-radius:5px;';
+      cap.onclick = async () => {
+        const img = await player.screenshot();
+        const w = window.open('');
+        w.document.write(`<img src="${img}">`);
+      };
+      ctrl.appendChild(cap);
+    });
   </script>
-</body>
+</head>
+<body style="margin:0;padding:0;background:#000;"></body>
 </html>
