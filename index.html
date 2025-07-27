@@ -1,45 +1,104 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Hasi Ka Bomb - Funny Face Cam</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script type="module">
-    import { Player, Webcam, Dom } from "https://cdn.jsdelivr.net/npm/@banuba/webar/dist/BanubaSDK.browser.esm.js";
-
-    let player;
-    window.addEventListener("DOMContentLoaded", async () => {
-      player = await Player.create({
-        clientToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.demo-token-for-hasikabomb-testing"
-      });
-
-      const webcam = new Webcam();
-      await player.use(webcam);
-
-      Dom.render(player, document.body);
-
-      const ctrl = document.createElement('div');
-      ctrl.style = 'position:fixed;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:1000;';
-      document.body.appendChild(ctrl);
-
-      ["funny/big-nose","funny/elephant-ears","funny/balloon-belly","funny/cat-face","funny/donkey-ears"].forEach(effect => {
-        const btn = document.createElement('button');
-        btn.textContent = effect.split('/')[1].replace('-', ' ');
-        btn.style = 'padding:8px 14px;font-size:14px;background:#f90;color:#000;border:none;border-radius:5px;';
-        btn.onclick = () => player.applyEffect(effect);
-        ctrl.appendChild(btn);
-      });
-
-      const cap = document.createElement('button');
-      cap.textContent = "📸 Capture";
-      cap.style = 'padding:8px 14px;font-size:14px;background:#44f;color:white;border:none;border-radius:5px;';
-      cap.onclick = async () => {
-        const img = await player.screenshot();
-        const w = window.open('');
-        w.document.write(`<img src="${img}">`);
-      };
-      ctrl.appendChild(cap);
-    });
-  </script>
+<meta charset="UTF‑8" />
+<meta name="viewport" content="width=device-width,initial‑scale=1.0,maximum‑scale=1.0,user‑scalable=no"/>
+<title>Hasi Ka Bomb – Jungle Fun Cam</title>
+<style>
+  body { margin:0; background:#fff; overflow:hidden; display:flex; flex-direction:column; height:100vh; }
+  #webar { flex:1; position:relative; }
+  #controls { display:flex; justify-content:space-around; background:#f7f700; padding:10px; }
+  button { background:#4caf50; color:white; font-size:1.2em; border:none; border-radius:8px; padding:8px 12px; flex:1; margin:0 5px; }
+</style>
 </head>
-<body style="margin:0;padding:0;background:#000;"></body>
+<body>
+
+<div id="webar"></div>
+<div id="controls">
+  <button id="snap">Capture 📸</button>
+  <button data-filter="nose">Funny Nose 🤪</button>
+  <button data-filter="lips">Big Lips 💋</button>
+  <button data-filter="belly">Balloon Belly 🎈</button>
+  <button data-filter="ears">Elephant Ears 🐘</button>
+  <button data-filter="donkey">Donkey Ears 🐴</button>
+  <button data-filter="cat">Cat Face 🐱</button>
+</div>
+
+<script type="module">
+import {
+  Webcam,
+  Player,
+  Module,
+  Effect,
+  Dom,
+  ImageCapture
+} from 'https://cdn.jsdelivr.net/npm/@banuba/webar/dist/BanubaSDK.browser.esm.js';
+
+async function main(){
+  const player = await Player.create({ clientToken: 'YOUR_DEMO_TOKEN_HERE' });
+  await player.addModule(new Module('https://cdn.jsdelivr.net/npm/@banuba/webar/dist/modules/face_tracker.zip'));
+  await player.use(new Webcam());
+  Dom.render(player, '#webar');
+
+  // helper to apply chosen filter effect (you’d have custom .zip effect files)
+  async function applyFilter(name){
+    // mapping effect names to zip URLs (you'd import your actual custom filters)
+    const effectMap = {
+      nose: 'effects/funny_nose.zip',
+      lips: 'effects/big_lips.zip',
+      belly: 'effects/balloon_belly.zip',
+      ears: 'effects/elephant_ears.zip',
+      donkey: 'effects/donkey_ears.zip',
+      cat: 'effects/cat_face.zip'
+    };
+    await player.applyEffect(new Effect(effectMap[name]));
+  }
+
+  document.querySelectorAll('#controls button[data-filter]').forEach(btn=>{
+    btn.onclick = ()=>applyFilter(btn.getAttribute('data-filter'));
+  });
+
+  const capture = new ImageCapture(player);
+  document.getElementById('snap').onclick = async ()=>{
+    const blob = await capture.takePhoto();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'hasi-ka-bomb.png';
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+
+  // Animated jungle overlays: you’d create another Effect .zip for backgrounds
+  const sceneEffects = {
+    jungle: 'effects/jungle_scene.zip',
+    tiger: 'effects/tiger_roar.zip',
+    hill: 'effects/hill_top.zip',
+    monkey: 'effects/monkey_mischief.zip'
+  };
+  function applyScene(name){ player.applyEffect(new Effect(sceneEffects[name])); }
+
+  // voice-trigger special: using Web Speech API
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recog = new SpeechRecognition();
+    recog.continuous = true;
+    recog.onresult = evt => {
+      const t = evt.results[evt.resultIndex][0].transcript.trim().toLowerCase();
+      if (t.includes('happy birthday')){
+        player.applyEffect(new Effect('effects/birthday_cake_popup.zip'));
+      }
+    };
+    recog.start();
+  }
+
+  // buttons or auto sequence to choose scenes
+  // e.g., every 15 sec cycle scenes
+  let sc = ['jungle','tiger','hill','monkey'];
+  let idx=0;
+  setInterval(()=>applyScene(sc[idx++%sc.length]),15000);
+}
+
+// run
+main().catch(console.error);
+</script>
+</body>
 </html>
