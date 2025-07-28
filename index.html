@@ -1,17 +1,31 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Hasi Ka Bomb</title>
+    <title>Hasi Ka Bomb - Jungle Fun Cam</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://webxr.run/sdk/v1/blippar.js"></script>
+    <style>
+      body, html {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: black;
+      }
+      #scene {
+        width: 100vw;
+        height: 100vh;
+      }
+    </style>
   </head>
   <body>
-    <div id="scene" style="width:100vw;height:100vh;"></div>
+    <div id="scene"></div>
+
     <script type="module">
       import { BlipparSDK } from 'https://webxr.run/sdk/v1/blippar.module.js';
+
       BlipparSDK.init({
-        licenseKey: cc70db37-e0b2-4222-9663-fe3f6fef0714
+        licenseKey: 'blippar_cc70db37e0b2-4222-9663-fe3f6fef0714', // ← Aapka key agar ye hi ho to try karein
         container: document.getElementById('scene')
       }).then((sdk) => {
         sdk.startCamera();
