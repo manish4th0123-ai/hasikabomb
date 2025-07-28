@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Hasi Ka Bomb - Jungle Fun Cam</title>
+  <title>Test Hasi Ka Bomb</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     html, body {
@@ -10,28 +10,20 @@
       padding: 0;
       height: 100%;
       overflow: hidden;
-      background-color: black;
+      background-color: yellow;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-    #scene {
-      width: 100vw;
-      height: 100vh;
+    #message {
+      color: green;
+      font-size: 24px;
+      text-align: center;
     }
   </style>
 </head>
 <body>
-  <div id="scene"></div>
-
-  <script type="module">
-    import { BlipparSDK } from 'https://webxr.run/sdk/v1/blippar.module.js';
-
-    BlipparSDK.init({
-      licenseKey: 'blippar_cc70db37e0b2-4222-9663-fe3f6fef0714',
-      container: document.getElementById('scene')
-    }).then((sdk) => {
-      sdk.startCamera();
-    }).catch(err => {
-      console.error("SDK Load Error:", err);
-    });
-  </script>
+  <div id="message">✅ Page working! Blippar SDK not loaded yet.</div>
 </body>
 </html>
