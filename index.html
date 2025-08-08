@@ -1,158 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#7fc971">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hasi Ka Bomb - Jungle Fun Cam</title>
-  <link rel="manifest" href="manifest.json">
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-face-three.prod.js"></script>
   <style>
     body, html {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background-color: #eaffd0;
-      font-family: sans-serif;
+      background: #000;
     }
-    #camera-container {
-      position: relative;
+    #container {
       width: 100vw;
       height: 100vh;
     }
-    video, canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
-    .button-bar {
-      position: absolute;
-      bottom: 20px;
+    #controls {
+      position: fixed;
+      bottom: 10px;
       width: 100%;
       display: flex;
       justify-content: center;
       gap: 10px;
-      z-index: 10;
     }
     button {
-      background-color: #ffeb3b;
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      background-color: #8bc34a;
       border: none;
-      padding: 15px;
-      border-radius: 30px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #cddc39;
+      border-radius: 10px;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <div id="camera-container">
-    <video id="video" autoplay muted playsinline></video>
-    <canvas id="canvas"></canvas>
-    <img id="overlay-elephant" class="overlay" src="https://i.imgur.com/slt5w4E.png" style="display:none">
-    <img id="overlay-donkey" class="overlay" src="https://i.imgur.com/tPjk5cn.png" style="display:none">
-    <img id="overlay-cat" class="overlay" src="https://i.imgur.com/EUMH7wX.png" style="display:none">
-    <img id="overlay-lips" class="overlay" src="https://i.imgur.com/vu7TJNa.png" style="display:none">
-    <img id="overlay-belly" class="overlay" src="https://i.imgur.com/ZWE2fbk.png" style="display:none">
-    <img id="birthday-cake" class="overlay" src="https://i.imgur.com/QmS62ye.png" style="display:none">
-    <div class="button-bar">
-      <button onclick="takeScreenshot()">📸</button>
-      <button onclick="cycleOverlay()">🐵 Filter</button>
-    </div>
+  <div id="container"></div>
+  <div id="controls">
+    <button onclick="switchFilter()">Change Filter</button>
+    <button onclick="takeScreenshot()">📸 Screenshot</button>
   </div>
 
   <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const overlays = [
-      'overlay-elephant',
-      'overlay-donkey',
-      'overlay-cat',
-      'overlay-lips',
-      'overlay-belly'
+    const filters = [
+      'elephant_ears.png',
+      'cat_face.png',
+      'big_lips.png',
+      'balloon_belly.png'
     ];
-    let currentOverlayIndex = -1;
+    let currentFilter = 0;
+    let faceMesh, faceFilter;
 
-    async function initCamera() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
-      } catch (e) {
-        alert('Camera access denied');
-      }
-    }
+    const start = async () => {
+      const mindarThree = new window.MINDAR.FACE.MindARThree({ container: document.querySelector("#container") });
+      const { renderer, scene, camera } = mindarThree;
+      await mindarThree.start();
 
-    function drawFrame() {
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      ctx.drawImage(video, 0, 0);
+      const anchor = mindarThree.addAnchor(168);
+      const textureLoader = new THREE.TextureLoader();
 
-      if (currentOverlayIndex >= 0) {
-        const currentOverlay = document.getElementById(overlays[currentOverlayIndex]);
-        if (currentOverlay && currentOverlay.style.display !== 'none') {
-          ctx.drawImage(currentOverlay, 0, 0, canvas.width, canvas.height);
-        }
-      }
+      faceMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.5, 1.5),
+        new THREE.MeshBasicMaterial({ map: textureLoader.load(filters[currentFilter]), transparent: true })
+      );
 
-      requestAnimationFrame(drawFrame);
-    }
+      anchor.group.add(faceMesh);
 
-    function takeScreenshot() {
-      const link = document.createElement('a');
-      link.download = 'fun-cam.png';
-      link.href = canvas.toDataURL();
-      link.click();
-    }
-
-    function cycleOverlay() {
-      overlays.forEach(id => document.getElementById(id).style.display = 'none');
-      currentOverlayIndex = (currentOverlayIndex + 1) % overlays.length;
-      document.getElementById(overlays[currentOverlayIndex]).style.display = 'block';
-    }
-
-    function startSpeechRecognition() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) return;
-
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.onresult = (event) => {
-        for (let i = 0; i < event.results.length; i++) {
-          const text = event.results[i][0].transcript.toLowerCase();
-          if (text.includes('happy birthday')) {
-            showCake();
-          }
-        }
-      };
-      recognition.start();
-    }
-
-    function showCake() {
-      const cake = document.getElementById('birthday-cake');
-      cake.style.display = 'block';
-      setTimeout(() => {
-        cake.style.display = 'none';
-      }, 5000);
-    }
-
-    window.onload = () => {
-      initCamera();
-      video.addEventListener('loadeddata', drawFrame);
-      startSpeechRecognition();
+      renderer.setAnimationLoop(() => {
+        renderer.render(scene, camera);
+      });
     };
+
+    const switchFilter = () => {
+      currentFilter = (currentFilter + 1) % filters.length;
+      const loader = new THREE.TextureLoader();
+      faceMesh.material.map = loader.load(filters[currentFilter]);
+    };
+
+    const takeScreenshot = () => {
+      const canvas = document.querySelector("canvas");
+      const imgData = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.download = "jungle-fun-cam.png";
+      link.href = imgData;
+      link.click();
+    };
+
+    start();
   </script>
 </body>
 </html>
